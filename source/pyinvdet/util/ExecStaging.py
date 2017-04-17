@@ -14,8 +14,8 @@ class ExecStaging(object):
     """Staging small tasks of a large project, so that the whole project can be resumed in the
     middle. The tasks can have stack-like levels
     """
-    def __init__(self, prefix = ""):
-        self._fname = os.path.join(prefix, "staging")
+    def __init__(self, directory = ""):
+        self._fname = os.path.join(directory, "staging")
         self._write = None
         self._embed_cnt = 0
     
