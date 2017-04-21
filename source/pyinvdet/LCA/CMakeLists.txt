@@ -1,0 +1,1 @@
+project("RMQ_lib")
