@@ -5,6 +5,30 @@ LCA: Michael A. Bender & Martin Farach-Colton's algorithm
 author: zijuexiansheng
 */
 
+/*
+In order to this this LCA class, the TreeNodeType should satisfy the following conditions
+    * There is an extra member in the TreeNodeType class so that it could be modified
+        * a member function `set_nodeId( id )` should be provided to modify its value
+        * a member function `get_nodeId()` should be provided to read its value
+        * The type should be `size_t`
+    * `get_child()`, `get_child(i)` and `get_sibling()` should be provided
+    * If the tree is of the form left-child-right-sibling:
+        * `get_child(i)` must be provided, but can do anything
+        * `get_child()` is used to return the left child
+        * `get_sibling()` is used to return the sibling
+    * If the tree is just of a generic representation
+        * `get_child(i)` is used to return the i-th child
+            * if it returns NULL, it means that the i-th, (i+1)-th, ... children are all NULL
+        * `get_child()` and `get_sibling` must be provided but can do anything
+    * The prototype of these member variable/functions are as follows:
+        * `size_t nodeId;`: the variable name `nodeId` is not an requirement
+        * `void set_nodeId(size_t id);`: the `void` return type is not an requirement
+        * `size_t get_nodeId() const`
+        * `TreeNodeType* get_child() const`
+        * `TreeNodeType* get_child(size_t i) const`: This one can be combined with the one above
+        * `TreeNodeType* get_sibling() const`
+*/
+
 #ifndef __LCA_H
 #define __LCA_H
 
@@ -116,7 +140,7 @@ void LCA<TreeNodeType>::RMQ_Restricted::preprocess()
         size_t blockid = get_block_id(i, tmp_end);
         if(blocks[ blockid ].empty())
             RMQ_block_Preprocess( blocks[blockid], i, tmp_end );
-        int block_min_pos = RMQ_block_query( blocks[blockid], 0, tmp_end - i ) + i;
+        size_t block_min_pos = RMQ_block_query( blocks[blockid], 0, tmp_end - i ) + i;
         block_ids.push_back(blockid);
         blockmin.push_back( &A[ block_min_pos ] );
     }
@@ -134,26 +158,17 @@ typename LCA<TreeNodeType>::ArrayElement* LCA<TreeNodeType>::RMQ_Restricted::que
     if(firstblock == lastblock)
     {
         size_t block_start = firstblock * block_size;
-        size_t blockid = block_ids[ firstblock ];
-        size_t block_min_pos = RMQ_block_query( blocks[blockid], i-block_start, j-block_start ) + block_start;
-        return &A[ block_min_pos ];
+        return &A[ RMQ_block_query( blocks[block_ids[ firstblock ]], i-block_start, j-block_start ) + block_start ];
     }
     else
     {
-        LCA<TreeNodeType>::ArrayElement* ret;
         size_t first_start = firstblock * block_size;
-        size_t first_block_id = block_ids[ firstblock ];
-
         size_t last_start = lastblock * block_size;
-        size_t last_block_id = block_ids[ lastblock ];
 
-        size_t first_block_min = RMQ_block_query( blocks[first_block_id], i-first_start, block_size-1 ) + first_start;
-        size_t last_block_min = RMQ_block_query( blocks[last_block_id], 0, j-last_start) + last_start;
+        size_t first_block_min = RMQ_block_query( blocks[block_ids[ firstblock ]], i-first_start, block_size-1 ) + first_start;
+        size_t last_block_min = RMQ_block_query( blocks[block_ids[ lastblock ]], 0, j-last_start) + last_start;
 
-        if(A[first_block_min].key < A[last_block_min].key)
-            ret = &A[ first_block_min ];
-        else
-            ret = &A[ last_block_min ];
+        LCA<TreeNodeType>::ArrayElement* ret = A[first_block_min].key < A[last_block_min].key ? &A[ first_block_min ] : &A[ last_block_min ];
         if(firstblock + 1 < lastblock)
         {
             LCA<TreeNodeType>::ArrayElement* min_arr = RMQ_log_query( firstblock + 1, lastblock-1 );
@@ -202,7 +217,6 @@ template<class TreeNodeType>
 typename LCA<TreeNodeType>::ArrayElement* LCA<TreeNodeType>::RMQ_Restricted::RMQ_log_query(size_t i, size_t j)
 {
     if(i == j)  return RMQ_log_minima[0][i];
-    if(i > j)   std::swap(i, j);
     size_t k = log2(j-i);
 
     LCA<TreeNodeType>::ArrayElement* ret = RMQ_log_minima[k][j+1-(1<<k)];

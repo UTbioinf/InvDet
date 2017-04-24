@@ -48,7 +48,7 @@ void RMQ<ValType>::clear()
 {
     cur_choice = 0;
     RMQnlogn<ValType>::clear();
-    rmq_linear();
+    rmq_linear.clear();
 }
 
 template<class ValType>
