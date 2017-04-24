@@ -1,88 +1,105 @@
 /*
-
-RMP: range minimum query
-Michael A. Bender & Martin Farach-Colton's algorithm
-<O(nlogn), O(1)>
-
-author: zijuexiansheng
+General RMQ algorithm
 */
 
-#ifndef __RMQ_N_LOG_N_H
-#define __RMQ_N_LOG_N_H
+#ifndef __RMQGENERAL_H
+#define __RMQGENERAL_H
 
-#include <vector>
+#include "RMQLinear.hpp"
+#include "RMQnlogn.hpp"
 
 namespace loon
 {
 
 template<class ValType>
-class RMQ
+class RMQ: public RMQnlogn<ValType>
 {
 private:
-    static std::vector<size_t> log_table;
-    std::vector<ValType> A;
-    std::vector<std::vector<ValType> > M;
-
-    static size_t log2(size_t n);
+    RMQLinear<ValType> rmq_linear;
+    size_t N_nlogn, N_linear;
+    short cur_choice;
+    
+    ValType naive_query(size_t i, size_t j) const;
 public:
-    void reserve(size_t n);
+    RMQ(size_t nlogn_n = 10, size_t linear_n = 10000);
     void clear();
     void push_back(const ValType& val);
     void preprocess();
-    ValType query(size_t i, size_t j) const;
+    ValType query(size_t i, size_t j);
 };
 
 template<class ValType>
-/*static*/ std::vector<size_t> RMQ<ValType>::log_table(2, 0);
-
-template<class ValType>
-/*static*/ size_t RMQ<ValType>::log2(size_t n)
+ValType RMQ<ValType>::naive_query(size_t i, size_t j) const
 {
-    while(log_table.size() <= n)
-        log_table.insert(log_table.end(), log_table.size(), 1 + log_table.back());
-    return log_table[n];
+    if(i > j)   std::swap(i, j);
+    ValType ret = RMQnlogn<ValType>::A[i];
+    for(++i; i <= j; ++i)
+        if(ret > RMQnlogn<ValType>::A[i])  ret = RMQnlogn<ValType>::A[i];
+    return ret;
 }
 
 template<class ValType>
-void RMQ<ValType>::reserve(size_t n)
-{
-    A.reserve(n);
-}
+RMQ<ValType>::RMQ(size_t nlogn_n, size_t linear_n):
+    N_nlogn(nlogn_n), N_linear(linear_n), cur_choice(0)
+{}
 
 template<class ValType>
 void RMQ<ValType>::clear()
 {
-    A.clear();
+    cur_choice = 0;
+    RMQnlogn<ValType>::clear();
+    rmq_linear();
 }
 
 template<class ValType>
 void RMQ<ValType>::push_back(const ValType& val)
 {
-    A.push_back( val );
+    if(cur_choice < 2)
+    {
+        size_t nn = RMQnlogn<ValType>::A.size();
+        if(nn >= N_linear )
+        {
+            cur_choice = 2;
+            rmq_linear.reserve( nn );
+            for(size_t i = 0; i < nn; ++i)
+                rmq_linear.push_back( RMQnlogn<ValType>::A[i] );
+            rmq_linear.push_back( val );
+            RMQnlogn<ValType>::A.clear();
+        }
+        else
+        {
+            RMQnlogn<ValType>::push_back( val );
+        }
+    }
+    else
+    {
+        rmq_linear.push_back( val );
+    }
 }
 
 template<class ValType>
 void RMQ<ValType>::preprocess()
 {
-    size_t n = A.size();
-    size_t log2_n = log2(n);
-    M.assign(log2_n + 1, A);
-    for(size_t i = 1; i <= log2_n; ++i)
-        for(size_t j = 0; j < n; ++j)
+    if(cur_choice < 2)
+    {
+        if(RMQnlogn<ValType>::A.size() >= N_nlogn)
         {
-            M[i][j] = M[i-1][std::min(n-1, j + (1 << (i-1)))];
-            if(M[i-1][j] < M[i][j])
-                M[i][j] = M[i-1][j];
+            cur_choice = 1;
+            RMQnlogn<ValType>::preprocess();
         }
+    }
+    else
+    {
+        rmq_linear.preprocess();
+    }
 }
 
 template<class ValType>
-ValType RMQ<ValType>::query(size_t i, size_t j) const
+ValType RMQ<ValType>::query(size_t i, size_t j)
 {
-    if(i == j)  return M[0][i];
-    if(i > j)   std::swap(i, j);
-    size_t k = log2(j - i);
-    return std::min(M[k][i], M[k][j+1-(1<<k)]);
+    if(cur_choice == 0) return naive_query(i, j);
+    else if(cur_choice == 1)    return RMQnlogn<ValType>::query(i, j);
+    else    return rmq_linear.query(i, j);
 }
 
 }// namespace loon
