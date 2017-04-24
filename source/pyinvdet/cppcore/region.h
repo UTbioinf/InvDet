@@ -2,8 +2,10 @@
 #define __INVDET_REGION_H
 
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 namespace loon
 {
@@ -25,6 +27,25 @@ public:
             short mapQ, char dir);
     bool is_forward() const;
     bool is_backward() const;
+};
+
+class SegEndpoint
+{
+public:
+    size_t seg_id;
+    size_t loc;
+    bool is_start;
+public:
+    SegEndpoint(size_t s_id = -1, size_t l=-1, bool is_left=false):
+        seg_id(s_id), loc(l), is_start(is_left)
+    {}
+    bool operator<(const SegEndpoint& se) const
+    {
+        if(loc < se.loc)    return true;
+        if(loc > se.loc)    return false;
+        if(!is_start && se.is_start)    return true;
+        return false;
+    }
 };
 
 class Region
