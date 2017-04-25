@@ -19,7 +19,8 @@ def main( argv = None )
         # generate new header
         line = line.strip()
         line_tokens = line.split('_')
-        new_header = "{}/{}/0_{}\n".format( line, line_tokens[0][5:], int(line_tokens[2]) - 1 )
+        qid = line_tokens[0][line_tokens[0].find("afun")+len("afun"):]
+        new_header = "{}/{}/0_{}\n".format( line, qid, int(line_tokens[2]) - 1 )
         fout.write(new_header)
         fout_log.write("{}\n{}\n".format(line, new_header))
 

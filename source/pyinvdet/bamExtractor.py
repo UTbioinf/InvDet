@@ -46,7 +46,8 @@ def run(args):
         if args.modify_qname:
             qname = qname.split("/", 1)[0]
             qname_tokens = qname.split("_")
-            qname = "{}/{}/0_{}".format(qname, qname_tokens[0][5:], int(qname_tokens[2])-1)
+            qid = qname_tokens[0][qname_tokens[0].find("afun") + len("afun"):]
+            qname = "{}/{}/0_{}".format(qname, qid, int(qname_tokens[2])-1)
         fout.write("{} {} {} ".format(aln.reference_id, qname, aln.query_length))
         fout.write("{} {} {} {} {} {}\n".format(aln.reference_start, aln.reference_end, 
                 aln.query_alignment_start, aln.query_alignment_end,
