@@ -40,7 +40,7 @@ void InvDector::gen_graphs(const std::string& fname,
     std::ofstream fout(fname.c_str());
     for(size_t i = 0; i < regions.size(); ++i)
     {
-        regions[i].remove_low_coverage_reads(min_cvg, min_cvg_percent);
+        //regions[i].remove_low_coverage_reads(min_cvg, min_cvg_percent);
         regions[i].gen_vertices();
         regions[i].make_pairs();
         regions[i].write_graph( i, fout );

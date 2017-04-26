@@ -279,9 +279,12 @@ void Region::write_graph(size_t r_id, std::ostream& out)
             }
     }
 
-    out << edges.size() << ' ' << r_id << std::endl;
-    for(eit = edges.begin(); eit != edges.end(); ++eit)
-        out << (*eit).u << ' ' << (*eit).v << ' ' << (*eit).w << std::endl;
+    if(not edges.empty())
+    {
+        out << edges.size() << ' ' << r_id << std::endl;
+        for(eit = edges.begin(); eit != edges.end(); ++eit)
+            out << (*eit).u << ' ' << (*eit).v << ' ' << (*eit).w << std::endl;
+    }
 }
 
 }// namespace loon

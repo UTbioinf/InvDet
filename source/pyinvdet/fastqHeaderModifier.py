@@ -8,7 +8,7 @@ def parse_args( argv = None):
     parser.add_argument("outfile", help="output fastq file name")
     return parser.parse_args( argv )
 
-def main( argv = None )
+def main( argv = None ):
     args = parse_args()
     fin = open(args.infile, "r")
     fout = open(args.outfile, "w")
