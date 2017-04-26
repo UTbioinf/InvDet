@@ -6,6 +6,7 @@ setup(
     description="Invertion Detection package",
     author="zijuexiansheng",
     license="MIT",
-    packages=["invdet"],
-    package_dir={"invdet": "pyinvdet"}
+    packages=["invdet", "invdet.util"],
+    package_dir={"invdet": "source/pyinvdet",
+                 "invdet.util": "source/pyinvdet/util"}
 )
