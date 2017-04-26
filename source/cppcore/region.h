@@ -2,7 +2,7 @@
 #define __INVDET_REGION_H
 
 #include <iostream>
-#include <stringstream>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <map>
@@ -22,7 +22,7 @@ public:
     VertexPair(size_t u, size_t v, size_t weight = 1);
     bool operator<(const VertexPair& rhs) const;
     void set_uvw(size_t u, size_t v, size_t w = 1);
-    void inc_weight();
+    void inc_weight() const;
 };
 
 class OneAln
@@ -87,9 +87,9 @@ public:
     void clear();
     void clear_name();
     void remove_low_coverage_reads(int min_cvg = 0, double min_cvg_percent = 0.0);
-    void geg_vertices();
+    void gen_vertices();
     void make_pairs();
-    void gen_graph_edges(size_t r_id, std::ostream& out);
+    void write_graph(size_t r_id, std::ostream& out);
 };
 
 }//namespace loon

@@ -42,9 +42,9 @@ bool VertexPair::operator<(const VertexPair& rhs) const
     return (u < rhs.u || (u == rhs.u && v < rhs.v));
 }
 
-void VertexPair::inc_weight()
+void VertexPair::inc_weight() const
 {
-    ++w;
+    ++const_cast<VertexPair*>(this)->w;
 }
 
 OneAln::OneAln(const std::string& qname, long long qlen,
@@ -56,7 +56,7 @@ OneAln::OneAln(const std::string& qname, long long qlen,
         q_start(qstart), q_end(qend),
         mapping_quality(mapQ), direction(dir)
 {
-    std::istringstream iss( qname.substr(qname.find("afun") + string("afun").length()) );
+    std::istringstream iss( qname.substr(qname.find("afun") + std::string("afun").length()) );
     iss >> q_id >> q_pos >> q_pos;
 }
 

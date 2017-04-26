@@ -6,7 +6,7 @@ namespace loon
 
 void InvDector::read(const std::string& fname)
 {
-    ifstream fin(fname.c_str());
+    std::ifstream fin(fname.c_str());
     size_t n;
     fin >> n;
     regions.assign(n, Region());
@@ -37,7 +37,7 @@ void InvDector::read(const std::string& fname)
 void InvDector::gen_graphs(const std::string& fname,
         int min_cvg/* = 0*/, double min_cvg_percent/* = 0.0 */)
 {
-    ofstream fout(fname.c_str());
+    std::ofstream fout(fname.c_str());
     for(size_t i = 0; i < regions.size(); ++i)
     {
         regions[i].remove_low_coverage_reads(min_cvg, min_cvg_percent);
