@@ -7,8 +7,8 @@ namespace loon
 void InvDector::read(const std::string& fname)
 {
     std::ifstream fin(fname.c_str());
-    size_t n;
-    fin >> n;
+    size_t n = 0;
+    if(!(fin >> n)) return;
     regions.assign(n, Region());
 
     long long len;
