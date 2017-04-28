@@ -1,3 +1,5 @@
 Cython
 scikit-build
 pysam
+networkx
+git+https://github.com/gsagnol/picos.git#egg=picos
