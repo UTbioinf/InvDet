@@ -2,7 +2,7 @@ from skbuild import setup
 
 setup(
     name="invdet",
-    version="0.1.0",
+    version="0.1.23",
     description="Invertion Detection package",
     author="zijuexiansheng",
     license="MIT",

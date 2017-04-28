@@ -11,9 +11,9 @@ cdef extern from "invdet_core.h" namespace "loon":
 cdef class InvDector:
     cdef CppInvDector _invdet
 
-    cpdef read(self, str fname):
+    def read(self, str fname):
         self._invdet.read(<string>fname)
 
-    cpdef gen_graphs(self, str fname, int min_cvg = 0, double min_cvg_percent = 0.0):
+    def gen_graphs(self, str fname, int min_cvg = 0, double min_cvg_percent = 0.0):
         self._invdet.gen_graphs(<string>fname, min_cvg, min_cvg_percent)
 
