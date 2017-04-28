@@ -2,7 +2,8 @@ Inversion Detector
 
 # dependencies
 
-`pip install -r requirements.txt`
+* cmake >= 3.6
+* Anything else can be installed via command `pip install -r requirements.txt`
 
 # Install
 
