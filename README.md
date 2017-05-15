@@ -14,8 +14,3 @@ Inversion Detector
 
 Type `invdet -h` to see the usage
 
-# TODO
-
-* raise exception if open file failed
-
-

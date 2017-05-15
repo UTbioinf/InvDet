@@ -2,14 +2,14 @@ from libcpp.string cimport string
 
 cdef extern from "invdet_core.h" namespace "loon":
     cdef cppclass CppInvDector "loon::InvDector":
-        void read(const string& fname)
+        void read(const string& fname) except +RuntimeError
 
-        void gen_graphs(const string& fname)
-        void gen_graphs(const string& fname, int min_cvg)
-        void gen_graphs(const string& fname, int min_cvg, double min_cvg_percent)
+        void gen_graphs(const string& fname) except +RuntimeError
+        void gen_graphs(const string& fname, int min_cvg) except +RuntimeError
+        void gen_graphs(const string& fname, int min_cvg, double min_cvg_percent) except +RuntimeError
         
         void report_inversions(const string& graph_fname, const string& maxcut_fname,
-                const string& inversion_fname)
+                const string& inversion_fname) except +RuntimeError
 
 cdef class InvDector:
     cdef CppInvDector _invdet
