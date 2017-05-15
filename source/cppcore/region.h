@@ -90,6 +90,8 @@ public:
     void gen_vertices();
     void make_pairs();
     void write_graph(size_t r_id, std::ostream& out);
+    void report_inversions(size_t r_id, size_t n_vertices, size_t n_edges,
+            std::istream& graph_in, std::istream& maxcut_in, std::ostream& inv_out);
 };
 
 }//namespace loon

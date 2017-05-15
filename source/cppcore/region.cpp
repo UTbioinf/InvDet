@@ -1,3 +1,4 @@
+#include <relabel.h>
 #include "region.h"
 
 namespace loon
@@ -284,6 +285,84 @@ void Region::write_graph(size_t r_id, std::ostream& out)
         out << edges.size() << ' ' << r_id << std::endl;
         for(eit = edges.begin(); eit != edges.end(); ++eit)
             out << (*eit).u << ' ' << (*eit).v << ' ' << (*eit).w << std::endl;
+    }
+}
+
+void Region::report_inversions(size_t r_id, size_t n_vertices, size_t n_edges,
+        std::istream& graph_in, std::istream& maxcut_in, std::ostream& inv_out)
+{
+    RelabelSmallPosInt<int, int> node_relabel;
+    std::vector<bool> max_cut(n_vertices, false);
+
+    int u_name, v_name, e_weight;
+    bool u_party;
+    for(size_t i = 0; i < n_vertices; ++i)
+    {
+        maxcut_in >> u_name >> u_party;
+        max_cut[ node_relabel.add_raw_id( u_name ) ] = u_party;
+    }
+
+    std::vector< std::vector<int> > graph( n_vertices );
+    for(size_t i = 0; i < n_edges; ++i)
+    {
+        graph_in >> u_name >> v_name >> e_weight;
+        graph[ node_relabel.get_new_id( u_name ) ].push_back( node_relabel.get_new_id( v_name ) );
+        graph[ node_relabel.get_new_id( v_name ) ].push_back( node_relabel.get_new_id( u_name ) );
+    }
+
+    std::vector<bool> visited( n_vertices, false );
+    std::vector<int> flip_id;
+    int flip_left;
+    size_t weight_false = 0, weight_true = 0;
+    size_t tmp_weight;
+    for(int i = 0; i < n_vertices; ++i)
+    {
+        if(! visited[i])
+        {
+            weight_true = weight_false = 0;
+            flip_id.clear();
+            flip_left = 0;
+
+            visited[ i ] = true;
+            flip_id.push_back( i );
+            int raw_id = node_relabel.get_raw_id(i);
+            tmp_weight = segs_end[ raw_id ] - segs_start[ raw_id ];
+            if( max_cut[i] )    weight_true += tmp_weight;
+            else    weight_false += tmp_weight;
+
+            while(flip_left < flip_id.size())
+            {
+                int uid = flip_id[ flip_left++ ];
+                for(std::vector<int>::iterator vit = graph[ uid ].begin();
+                        vit != graph[ uid ].end(); ++vit)
+                    if(! visited[ *vit ])
+                    {
+                        visited[ *vit ] = true;
+                        flip_id.push_back( *vit );
+                        raw_id = node_relabel.get_raw_id( *vit );
+                        tmp_weight = segs_end[ raw_id ] - segs_start[ raw_id ];
+                        if( max_cut[*vit] ) weight_true += tmp_weight;
+                        else    weight_false += tmp_weight;
+                    }
+            }
+            if(weight_true < weight_false)
+            {
+                for(std::vector<int>::iterator it = flip_id.begin(); it != flip_id.end(); ++it)
+                    max_cut[ *it ] = !max_cut[ *it ];
+            }
+        }
+    }
+
+    int false_cnt = std::count(max_cut.begin(), max_cut.end(), false);
+    if(false_cnt == 0)  return;
+    inv_out << false_cnt << ' ' << r_id << std::endl;
+    for(int i = 0; i < n_vertices; ++i)
+    {
+        if(!max_cut[i])
+        {
+            int raw_id = node_relabel.get_raw_id( i );
+            inv_out << segs_start[ raw_id ] << ' ' << segs_end[ raw_id ] << std::endl;
+        }
     }
 }
 

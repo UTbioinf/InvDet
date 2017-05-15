@@ -31,16 +31,21 @@ cdef class MaxCut:
     cdef CppMaxCut _maxcut
     cdef float _value
     cdef list _solution
+    cdef int _maxnode
 
-    def __cinit__(self, threshold = 15):
+    def __cinit__(self, threshold = 15, maxnode = 60):
         self._maxcut.set_small_threshold(threshold)
         self._value = float("-inf")
+        self._maxnode = maxnode
 
     def clear(self):
         self._maxcut.clear()
 
     def set_small_threshold(self, int threshold):
         self._maxcut.set_small_threshold(threshold)
+
+    def set_sdp_maxnode(self, int maxnode):
+        self._maxnode = maxnode
 
     def add_edge(self, int u, int v, int w):
         self._maxcut.add_edge(u, v, w)
@@ -119,10 +124,11 @@ cdef class MaxCut:
         if self._maxcut.solve():
             self._solution = self._maxcut.get_solution()
         else:
-            self.approx_878(min_iteration, max_iteration, min_ratio, max_ratio)
-            if self._value < self._maxcut.get_value():
-                self._value = self._maxcut.get_value()
-                self._solution = self._maxcut.get_solution()
+            if self._maxnode >= self._maxcut.number_of_nodes():
+                self.approx_878(min_iteration, max_iteration, min_ratio, max_ratio)
+                if self._value < self._maxcut.get_value():
+                    self._value = self._maxcut.get_value()
+                    self._solution = self._maxcut.get_solution()
 
     def is_bipartite(self):
         if self._maxcut.is_bipartite():

@@ -1,4 +1,6 @@
+#include <iostream>
 #include <fstream>
+#include <cstdlib>
 #include "invdet_core.h"
 
 namespace loon
@@ -46,6 +48,34 @@ void InvDector::gen_graphs(const std::string& fname,
         regions[i].write_graph( i, fout );
     }
     fout.close();
+}
+
+void InvDector::report_inversions(const std::string& graph_fname,
+        const std::string& maxcut_fname,
+        const std::string& inversion_fname)
+{
+    std::ifstream graph_fin( graph_fname.c_str() );
+    std::ifstream maxcut_fin( maxcut_fname.c_str() );
+    std::ofstream inv_fout( inversion_fname.c_str() );
+
+    size_t n_vertices, n_edges;
+    size_t ref_id;
+    while(graph_fin >> n_edges >> ref_id)
+    {
+        size_t rid;
+        maxcut_fin >> n_vertices >> rid;
+        if(ref_id != rid)
+        {
+            std::cerr << "[ERROR]: The graph file [" << graph_fname << "] and maxcut file [" << maxcut_fname << "] don't match!" << std::endl;
+            exit(-1);
+        }
+        regions[ref_id].report_inversions( ref_id, n_vertices, n_edges,
+                graph_fin, maxcut_fin, inv_fout);
+    }
+
+    graph_fin.close();
+    maxcut_fin.close();
+    inv_fout.close();
 }
 
 }// namespace loon
