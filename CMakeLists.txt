@@ -10,4 +10,5 @@ if(SKBUILD)
     find_package(Cython REQUIRED)
 endif()
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_subdirectory(source)
