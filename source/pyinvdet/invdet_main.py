@@ -64,7 +64,7 @@ def main(argv = None):
             exit(-1)
         logger.info("Run BLASR")
         pe_prefix = os.path.join( args.working_directory, "pe_reads")
-        subprocess.call(["blasr", pe_prefix + ".fastq", args.target_genome, "--allowAdjacentIndels", "--out", pe_prefix+".bam", "--bam", "--unaligned", pe_prefix + ".unaligned.txt", "--noPrintUnalignedSeqs", "--clipping", "hard", "--nproc", str(args.nproc)])
+        subprocess.check_call(["blasr", pe_prefix + ".fastq", args.target_genome, "--allowAdjacentIndels", "--out", pe_prefix+".bam", "--bam", "--unaligned", pe_prefix + ".unaligned.txt", "--noPrintUnalignedSeqs", "--clipping", "hard", "--nproc", str(args.nproc)])
         start_from = "extract"
 
     if start_from == "extract":
