@@ -39,6 +39,7 @@ def parse_args(argv = None):
 
 def main(argv = None):
     args = parse_args(argv)
+    makedir( args.working_directory )
 
     if args.log:
         logging.basicConfig(filename=os.path.join(args.working_directory, "invdet.log"), format="[%(asctime)s] [%(levelname)s] %(message)s", level=logging.DEBUG)
@@ -46,9 +47,6 @@ def main(argv = None):
         logging.basicConfig(format="[%(asctime)s] [%(levelname)s] %(message)s", level=logging.DEBUG)
     logger = logging.getLogger()
     logger.info("Start")
-
-    logger.info("create working directory")
-    makedir( args.working_directory )
 
     start_from = args.start_from
     if start_from == "begin":
