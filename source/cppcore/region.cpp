@@ -266,9 +266,10 @@ void Region::write_graph(size_t r_id, std::ostream& out)
             for(std::vector<size_t>::iterator vit = it3->second.begin();
                     vit != it3->second.end(); ++vit)
             {
-                if(seg_ids[ *uit ] == seg_ids[ *vit ])
+                if(seg_ids[ *uit ] == seg_ids[ *vit ] || regional_alns[ *uit ].is_forward() == regional_alns[ *vit ].is_forward())
                 {
                     // if the validated region still have inversions inside, ignore it
+                    // or the two reads are in the same direction, ignore it
                     continue;
                 }
                 e.set_uvw( seg_ids[ *uit ], seg_ids[ *vit ] );
