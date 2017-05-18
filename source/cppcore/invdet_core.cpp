@@ -45,7 +45,7 @@ void InvDector::gen_graphs(const std::string& fname,
     if(! fout.is_open())    throw std::runtime_error("invdet_core: cannot open file [" + fname + "]");
     for(size_t i = 0; i < regions.size(); ++i)
     {
-        //regions[i].remove_low_coverage_reads(min_cvg, min_cvg_percent);
+        regions[i].remove_low_coverage_reads(min_cvg, min_cvg_percent);
         regions[i].gen_vertices();
         regions[i].make_pairs();
         regions[i].write_graph( i, fout );
