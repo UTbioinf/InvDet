@@ -88,7 +88,8 @@ bool OneAln::is_valid() const
 
 bool OneAln::operator<(const OneAln& rhs) const
 {
-    if(is_valid() && r_start < rhs.r_start)   return true;
+    if(is_valid() && (r_start < rhs.r_start || 
+            (r_start == rhs.r_start && r_end > rhs.r_end)))   return true;
     return false;
 }
 
@@ -204,18 +205,19 @@ void Region::remove_low_coverage_reads(int min_cvg/* = 0*/, double min_cvg_perce
 #include <iostream>
 void Region::gen_vertices()
 {
+    const int min_overlap = 20;
     std::sort( regional_alns.begin(), regional_alns.end() );
     for(size_t i = 0; i < regional_alns.size(); ++i)
     {
         if(regional_alns[i].is_valid())
         {
-            if(segs_start.empty() || segs_end.back() <= regional_alns[i].r_start)
-            {
+            if(segs_start.empty() || segs_end.back() <= regional_alns[i].r_start + min_overlap)
+            {// new segment
                 segs_start.push_back( regional_alns[i].r_start );
                 segs_end.push_back( regional_alns[i].r_end );
             }
             else if(segs_end.back() < regional_alns[i].r_end)
-            {
+            {// update right-end
                 segs_end.back() = regional_alns[i].r_end;
             }
             seg_ids.push_back( segs_start.size() - 1 );
