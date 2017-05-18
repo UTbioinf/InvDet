@@ -24,7 +24,6 @@ def parse_args(argv = None):
     parser.add_argument("-t", "--target-genome", help="Target genome file")
     parser.add_argument("-r", "--reads", help="reads file (fasta/fastq format, pacbio long reads preferred)")
     parser.add_argument("-s", "--start-from", default="begin", choices=["begin", "blasr", "extract", "report"], help="start the program from (default: %(default)s)")
-    parser.add_argument("-j", "--nproc", default=1, type=int, help="number of threads for BLASR (default: %(default)s)")
     parser.add_argument("--min-coverage", default=5, type=int, help="min coverage for filtering poor alignments (default: %(default)s)")
     parser.add_argument("--min-percent", default=0.05, type=float, help="min percentage of coverage for filtering poor alignments (default: %(default)s)")
     parser.add_argument("--small-graph", default=15, type=int, help="max number of vertices for small graph (default: %(default)s)")
@@ -34,6 +33,11 @@ def parse_args(argv = None):
     parser.add_argument("--min-ratio", default=0.878, type=float, help="min approx ratio for the 0.878-approx algorithm (default: %(default)s)")
     parser.add_argument("--max-ratio", default=0.995, type=float, help="max approx ratio for the 0.878-approx algorithm (default: %(default)s)")
     parser.add_argument("--log", action="store_true", help="save log to file [invdet.log] instead of printing in the console")
+    parser.add_argument("-j", "--nproc", default=1, type=int, help="BLASR option: number of threads (default: %(default)s)")
+    parser.add_argument("--minMatch", type=int, default=12, help="BLASR option: minimum seed length (default: %(default)s)")
+    parser.add_argument("--minAlnLength", type=int, default=0, help="BLASR option: report alignments only if their lengths are greater than minAlnLength")
+    parser.add_argument("--minPctSimilarity", type=float, default=0, help="BLASR option: report alignments only if their percentage similarity is greater than minPctSimilarity (default: %(default)s)")
+    parser.add_argument("--minPctAccuracy", type=float, default=0, help="BLASR option: report alignments only if their percentage accuracy is greater than minAccuracy")
 
     return parser.parse_args( argv )
 
@@ -64,7 +68,7 @@ def main(argv = None):
             exit(-1)
         logger.info("Run BLASR")
         pe_prefix = os.path.join( args.working_directory, "pe_reads")
-        subprocess.check_call(["blasr", pe_prefix + ".fastq", args.target_genome, "--allowAdjacentIndels", "--out", pe_prefix+".bam", "--bam", "--unaligned", pe_prefix + ".unaligned.txt", "--noPrintUnalignedSeqs", "--clipping", "hard", "--nproc", str(args.nproc)])
+        subprocess.check_call(["blasr", pe_prefix + ".fastq", args.target_genome, "--allowAdjacentIndels", "--out", pe_prefix+".bam", "--bam", "--unaligned", pe_prefix + ".unaligned.txt", "--noPrintUnalignedSeqs", "--clipping", "hard", "--nproc", str(args.nproc), "--minMatch", str(args.minMatch), "--minAlnLength", str(args.minAlnLength), "--minPctSimilarity", str(args.minPctSimilarity), "minPctAccuracy", str(args.minPctAccuracy)])
         start_from = "extract"
 
     if start_from == "extract":
