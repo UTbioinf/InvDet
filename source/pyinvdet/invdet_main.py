@@ -26,6 +26,7 @@ def parse_args(argv = None):
     parser.add_argument("-s", "--start-from", default="begin", choices=["begin", "blasr", "extract", "report"], help="start the program from (default: %(default)s)")
     parser.add_argument("--min-coverage", default=5, type=int, help="min coverage for filtering poor alignments (default: %(default)s)")
     parser.add_argument("--min-percent", default=0.05, type=float, help="min percentage of coverage for filtering poor alignments (default: %(default)s)")
+    parser.add_argument("--min-overlap", default=50, type=int, help="min overlap for determining the overlaped regions (default: %(default)s)")
     parser.add_argument("--small-graph", default=15, type=int, help="max number of vertices for small graph (default: %(default)s)")
     parser.add_argument("--max-nodes", default=60, type=int, help="max number of vertices that can run on with 0.878-approx algorithm (default: %(default)s)")
     parser.add_argument("--min-iter", default=100, type=int, help="min iterations for running 0.878-approx algorithm (default: %(default)s)")
@@ -74,7 +75,7 @@ def main(argv = None):
             exit(-1)
         logger.info("Run BLASR")
         pe_prefix = os.path.join( args.working_directory, "pe_reads")
-        blasr_command = ["blasr", pe_prefix + ".fastq", args.target_genome, "--allowAdjacentIndels", "--out", pe_prefix+".bam", "--bam", "--unaligned", pe_prefix + ".unaligned.txt", "--noPrintUnalignedSeqs", "--clipping", "hard"]
+        blasr_command = ["blasr", pe_prefix + ".fastq", args.target_genome, "--allowAdjacentIndels", "--out", pe_prefix+".bam", "--bam", "--unaligned", pe_prefix + ".unaligned.txt", "--noPrintUnalignedSeqs", "--clipping", "hard", "--hitPolicy", "allbest"]
         if args.nproc > 1:
             addCmdParameter(blasr_command, "--nproc", args.nproc)
         if args.minMatch != 12:
@@ -101,7 +102,7 @@ def main(argv = None):
         brief_alignment = os.path.join( args.working_directory, "brief_alignment")
         graph_file = os.path.join( args.working_directory, "graph_file")
         inv_dector.read( brief_alignment )
-        inv_dector.gen_graphs(graph_file, args.min_coverage, args.min_percent)
+        inv_dector.gen_graphs(graph_file, args.min_coverage, args.min_percent, args.min_overlap)
 
         logger.info("run max-cut")
         graph_cut = os.path.join(args.working_directory, "graph_cut")

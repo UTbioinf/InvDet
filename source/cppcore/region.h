@@ -87,7 +87,7 @@ public:
     void clear();
     void clear_name();
     void remove_low_coverage_reads(int min_cvg = 0, double min_cvg_percent = 0.0);
-    void gen_vertices();
+    void gen_vertices(int min_overlap = 0);
     void make_pairs();
     void write_graph(size_t r_id, std::ostream& out);
     void report_inversions(size_t r_id, size_t n_vertices, size_t n_edges,

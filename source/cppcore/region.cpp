@@ -203,9 +203,8 @@ void Region::remove_low_coverage_reads(int min_cvg/* = 0*/, double min_cvg_perce
 }
 
 #include <iostream>
-void Region::gen_vertices()
+void Region::gen_vertices(int min_overlap)
 {
-    const int min_overlap = 20;
     std::sort( regional_alns.begin(), regional_alns.end() );
     for(size_t i = 0; i < regional_alns.size(); ++i)
     {
