@@ -201,6 +201,7 @@ void Region::remove_low_coverage_reads(int min_cvg/* = 0*/, double min_cvg_perce
     }
 }
 
+#include <iostream>
 void Region::gen_vertices()
 {
     std::sort( regional_alns.begin(), regional_alns.end() );
@@ -225,6 +226,10 @@ void Region::gen_vertices()
             break;
         }
     }
+    std::cerr << "segments start" << std::endl;
+    for(size_t i = 0; i < segs_start.size(); ++i)
+        std::cerr << segs_start[i] << ' ' << segs_end[i] << std::endl;
+    std::cerr << "segments end" << std::endl << std::endl;
 }
 
 void Region::make_pairs()
