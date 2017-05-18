@@ -42,6 +42,11 @@ def parse_args(argv = None):
 
     return parser.parse_args( argv )
 
+def addCmdParameter(command, param, *parameters):
+    command.append( param )
+    for each in parameters:
+        command.append( str(each) )
+
 def main(argv = None):
     args = parse_args(argv)
     makedir( args.working_directory )
@@ -69,7 +74,20 @@ def main(argv = None):
             exit(-1)
         logger.info("Run BLASR")
         pe_prefix = os.path.join( args.working_directory, "pe_reads")
-        subprocess.check_call(["blasr", pe_prefix + ".fastq", args.target_genome, "--allowAdjacentIndels", "--out", pe_prefix+".bam", "--bam", "--unaligned", pe_prefix + ".unaligned.txt", "--noPrintUnalignedSeqs", "--clipping", "hard", "--nproc", str(args.nproc), "--minMatch", str(args.minMatch), "--minReadLength", str(args.minReadLength), "--minAlnLength", str(args.minAlnLength), "--minPctSimilarity", str(args.minPctSimilarity), "minPctAccuracy", str(args.minPctAccuracy)])
+        blasr_command = ["blasr", pe_prefix + ".fastq", args.target_genome, "--allowAdjacentIndels", "--out", pe_prefix+".bam", "--bam", "--unaligned", pe_prefix + ".unaligned.txt", "--noPrintUnalignedSeqs", "--clipping", "hard"]
+        if args.nproc > 1:
+            addCmdParameter(blasr_command, "--nproc", args.nproc)
+        if args.minMatch != 12:
+            addCmdParameter(blasr_command, "--minMatch", args.minMatch)
+        if args.minReadLength != 50:
+            addCmdParameter(blasr_command, "--minReadLength", args.minReadLength)
+        if args.minAlnLength > 0:
+            addCmdParameter(blasr_command, "--minAlnLength", args.minAlnLength)
+        if args.minPctSimilarity > 0:
+            addCmdParameter(blasr_command, "--minPctSimilarity", args.minPctSimilarity)
+        if args.minPctAccuracy > 0:
+            addCmdParameter(blasr_command, "--minPctAccuracy", args.minPctAccuracy)
+        subprocess.check_call(blasr_command)
         start_from = "extract"
 
     if start_from == "extract":
