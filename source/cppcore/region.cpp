@@ -1,6 +1,11 @@
 #include <relabel.h>
 #include "region.h"
 
+#define DEBUG_SEG_EXTRACTION
+#define DEBUG_B_GRAPH_PRINT
+#define DEBUG_EDGE_WEIGHT_FILTER
+
+
 namespace loon
 {
 
@@ -227,10 +232,12 @@ void Region::gen_vertices(int min_overlap)
             break;
         }
     }
+#ifdef DEBUG_SEG_EXTRACTION
     std::cerr << "segments start" << std::endl;
     for(size_t i = 0; i < segs_start.size(); ++i)
         std::cerr << segs_start[i] << ' ' << segs_end[i] << std::endl;
     std::cerr << "segments end" << std::endl << std::endl;
+#endif
 }
 
 void Region::make_pairs()
@@ -289,9 +296,24 @@ void Region::write_graph(size_t r_id, std::ostream& out)
 
     if(not edges.empty())
     {
+    #ifdef DEBUG_EDGE_WEIGHT_FILTER
+        size_t edge_count = 0;
+        const int min_weight = 5;
+        for(eit = edges.begin(); eit != edges.end(); ++eit)
+            if((*eit).w > min_weight)
+                ++edge_count;
+        if(edge_count > 0)
+        {
+            out << edge_count << ' ' << r_id << std::endl;
+            for(eit = edges.begin(); eit != edges.end(); ++eit)
+                if((*eit).w > min_weight)
+                    out << (*eit).u << ' ' << (*eit).v << ' ' << (*eit).w << std::endl;
+        }
+    #else
         out << edges.size() << ' ' << r_id << std::endl;
         for(eit = edges.begin(); eit != edges.end(); ++eit)
             out << (*eit).u << ' ' << (*eit).v << ' ' << (*eit).w << std::endl;
+    #endif
     }
 }
 
@@ -310,12 +332,26 @@ void Region::report_inversions(size_t r_id, size_t n_vertices, size_t n_edges,
     }
 
     std::vector< std::vector<int> > graph( n_vertices );
+    int u_id, v_id;
+#ifdef DEBUG_B_GRAPH_PRINT
+    std::cout << "Print graph" << std::endl;
+#endif
     for(size_t i = 0; i < n_edges; ++i)
     {
         graph_in >> u_name >> v_name >> e_weight;
-        graph[ node_relabel.get_new_id( u_name ) ].push_back( node_relabel.get_new_id( v_name ) );
-        graph[ node_relabel.get_new_id( v_name ) ].push_back( node_relabel.get_new_id( u_name ) );
+        u_id = node_relabel.get_new_id( u_name );
+        v_id = node_relabel.get_new_id( v_name );
+        if( max_cut[ u_id ] == max_cut[ v_id ])
+            continue;
+        graph[ u_id ].push_back( v_id );
+        graph[ v_id ].push_back( u_id );
+    #ifdef DEBUG_B_GRAPH_PRINT
+        std::cout << "(" << u_name << ',' << v_name <<"; " << e_weight << ")" << std::endl;
+    #endif
     }
+#ifdef DEBUG_B_GRAPH_PRINT
+    std::cout << "Print graph finished" << std::endl;
+#endif
 
     std::vector<bool> visited( n_vertices, false );
     std::vector<int> flip_id;
@@ -363,6 +399,9 @@ void Region::report_inversions(size_t r_id, size_t n_vertices, size_t n_edges,
     int false_cnt = std::count(max_cut.begin(), max_cut.end(), false);
     if(false_cnt == 0)  return;
     inv_out << false_cnt << ' ' << r_id << std::endl;
+#ifdef DEBUG_B_GRAPH_PRINT
+    std::cout << "solution: " << std::endl;
+#endif
     for(int i = 0; i < n_vertices; ++i)
     {
         if(!max_cut[i])
@@ -370,7 +409,22 @@ void Region::report_inversions(size_t r_id, size_t n_vertices, size_t n_edges,
             int raw_id = node_relabel.get_raw_id( i );
             inv_out << segs_start[ raw_id ] << ' ' << segs_end[ raw_id ] << std::endl;
         }
+    #ifdef DEBUG_B_GRAPH_PRINT
+        if(max_cut[i])
+        {
+            int raw_id = node_relabel.get_raw_id( i );
+            std::cout << "(1, " << raw_id << "): " << segs_start[ raw_id ] << ' ' << segs_end[ raw_id ] << "; weight=" << (segs_end[ raw_id] - segs_start[ raw_id ])<< std::endl;
+        }
+        else
+        {
+            int raw_id = node_relabel.get_raw_id( i );
+            std::cout << "(0, " << raw_id << "): " << segs_start[ raw_id ] << ' ' << segs_end[ raw_id ] << "; weight=" << (segs_end[raw_id] - segs_start[raw_id]) << std::endl;
+        }
+    #endif
     }
+#ifdef DEBUG_B_GRAPH_PRINT
+    std::cout << "solution finished" << std::endl;
+#endif
 }
 
 }// namespace loon
