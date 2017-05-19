@@ -1,8 +1,9 @@
 from skbuild import setup
+import subprocess
 
 setup(
     name="invdet",
-    version="0.1.41",
+    version="0.1."+subprocess.check_output(["git", "rev-parse", "HEAD"])[:7],
     description="Invertion Detection package",
     author="zijuexiansheng",
     license="MIT",
