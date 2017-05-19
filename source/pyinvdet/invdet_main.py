@@ -38,8 +38,8 @@ def parse_args(argv = None):
     parser.add_argument("--minMatch", type=int, default=12, help="BLASR option: minimum seed length (default: %(default)s)")
     parser.add_argument("--minReadLength", type=int, default=50, help="BLASR option: Skip reads that have a full length less than minReadLength. Subreads may be shorter. (default: %(default)s)")
     parser.add_argument("--minAlnLength", type=int, default=0, help="BLASR option: report alignments only if their lengths are greater than minAlnLength (default: %(default)s)")
-    parser.add_argument("--minPctSimilarity", type=float, default=0, help="BLASR option: report alignments only if their percentage similarity is greater than minPctSimilarity (default: %(default)s)")
-    parser.add_argument("--minPctAccuracy", type=float, default=0, help="BLASR option: report alignments only if their percentage accuracy is greater than minAccuracy (default: %(default)s)")
+    parser.add_argument("--minPctSimilarity", type=float, default=0, help="BLASR option: report alignments only if their percentage similarity is greater than minPctSimilarity (range: [0.0, 100.0], default: %(default)s)")
+    parser.add_argument("--minPctAccuracy", type=float, default=0, help="BLASR option: report alignments only if their percentage accuracy is greater than minPctAccuracy (range: [0.0, 100.0], default: %(default)s)")
 
     return parser.parse_args( argv )
 
@@ -85,9 +85,16 @@ def main(argv = None):
         if args.minAlnLength > 0:
             addCmdParameter(blasr_command, "--minAlnLength", args.minAlnLength)
         if args.minPctSimilarity > 0:
+            if args.minPctSimilarity > 100:
+                logger.error("--minPctSimilarity should be in the range [0.0, 100.0]")
+                exit(1)
             addCmdParameter(blasr_command, "--minPctSimilarity", args.minPctSimilarity)
         if args.minPctAccuracy > 0:
+            if args.minPctAccuracy > 100:
+                logger.error("--minPctAccuracy should be in the range [0.0, 100.0]")
+                exit(1)
             addCmdParameter(blasr_command, "--minPctAccuracy", args.minPctAccuracy)
+        logger.debug("blasr parameter: {}".format(str(blasr_command)))
         subprocess.check_call(blasr_command)
         start_from = "extract"
 
