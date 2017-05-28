@@ -1,5 +1,9 @@
 Inversion Detector
 
+version 0.2
+
+In this version, the inverted repeats information is used.
+
 # dependencies
 
 * cmake >= 3.6
