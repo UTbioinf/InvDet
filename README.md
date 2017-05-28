@@ -1,5 +1,7 @@
 Inversion Detector
 
+This is the first basic version of the invdet project. It doesn't ignore the inverted repeats or extract the inverted repeats in the reference gomome/contigs/scaffolds
+
 # dependencies
 
 * cmake >= 3.6
