@@ -1,4 +1,5 @@
 #include <relabel.h>
+#include <stdexcept>
 #include "region.h"
 
 #define DEBUG_SEG_EXTRACTION
@@ -8,6 +9,108 @@
 
 namespace loon
 {
+
+InvertedRepeats::InvertedRepeats(const std::string& filedir):
+    prefix(filedir)
+{}
+
+void InvertedRepeats::parse_two_ints(const std::string& line)
+{
+    size_t i = 0;
+    size_t num = 0;
+    while(line[i] >= '0' && line[i] <= '9')
+        num = num * 10 + line[i++] - '0';
+    r_starts.push_back( num - 1 );
+
+    num = 0;    ++i;
+    while(line[i] >= '0' && line[i] <= '9')
+        num = num * 10 + line[i++] - '0';
+    r_ends.push_back( num );
+}
+
+void InvertedRepeats::quicksort(long long L, long long R)
+{
+    long long i = L, j = R;
+    size_t s_mid = r_starts[ (i + j) >> 1], e_mid = r_ends[ (i + j) >> 1 ];
+    while(i < j)
+    {
+        while(r_starts[i] < s_mid || (r_starts[i] == s_mid && r_ends[i] < e_mid))    ++i;
+        while(r_starts[j] > s_mid || (r_starts[j] == s_mid && r_ends[j] > e_mid))    --j;
+        if(i <= j)
+        {
+            std::swap(r_starts[i], r_starts[j]);
+            std::swap(r_ends[i], r_ends[j]);
+            ++i; --j;
+        }
+    }
+    if(i < R)   quicksort(i, R);
+    if(L < j)   quicksort(L, j);
+}
+
+void InvertedRepeats::open(size_t file_id)
+{
+    std::ostringstream oss;
+#if defined(_WIN32) || defined(__CYGWIN__)
+    oss << "\\nc_aln." << file_id << ".delta";
+#else
+    oss << "/nc_aln." << file_id << ".delta";
+#endif
+    std::string fname = prefix + oss.str();
+    fin.open( fname.c_str() );
+    if(!fin.is_open())
+        throw std::runtime_error("region: cannot open file [" + fname + "]");
+}
+
+void InvertedRepeats::close()
+{
+    fin.close();
+}
+
+void InvertedRepeats::read()
+{
+    clear();
+    std::string line;
+    getline(fin, line);
+    getline(fin, line);
+    while(getline(fin, line))
+    {
+        if(line[0] == '>')
+            continue;
+        parse_two_ints( line );
+        for(getline(fin, line); line[0] != '0'; getline(fin, line))
+            ;
+    }
+    if(! r_starts.empty())
+        quicksort(0, r_starts.size() - 1);
+}
+
+void InvertedRepeats::clear()
+{
+    r_starts.clear();
+    r_ends.clear();
+}
+
+size_t InvertedRepeats::size() const
+{
+    return r_starts.size();
+}
+
+bool InvertedRepeats::contained(size_t i, size_t j) const
+{
+    // to be improved
+    double uncovered_ratio = 1.0, tmp_ratio;
+    size_t len = j - i;
+    size_t left_ext, right_ext;
+    for(size_t ii = 0; ii < r_starts.size(); ++ii)
+    {
+        left_ext = right_ext = 0;
+        if(i < r_starts[ii])    left_ext = r_starts[ii] - i;
+        if(j > r_ends[ii])      right_ext = j - r_ends[ii];
+        tmp_ratio = double(left_ext + right_ext) / len;
+        if(tmp_ratio < uncovered_ratio) uncovered_ratio = tmp_ratio;
+    }
+    return (uncovered_ratio < 0.001);
+}
 
 VertexPair::VertexPair():
     u(0), v(0), w(0)
@@ -207,7 +310,9 @@ void Region::remove_low_coverage_reads(int min_cvg/* = 0*/, double min_cvg_perce
     }
 }
 
+#if defined(DEBUG_SEG_EXTRACTION) || defined(DEBUG_EDGE_WEIGHT_FILTER) || defined(DEBUG_B_GRAPH_PRINT)
 #include <iostream>
+#endif
 void Region::gen_vertices(int min_overlap)
 {
     std::sort( regional_alns.begin(), regional_alns.end() );
@@ -240,11 +345,13 @@ void Region::gen_vertices(int min_overlap)
 #endif
 }
 
-void Region::make_pairs()
+void Region::make_pairs(InvertedRepeats* inv_repeats/* = NULL */)
 {
     std::map<size_t, std::vector<size_t> >::iterator it;
     for(size_t i = 0; i < regional_alns.size(); ++i)
     {
+        if(inv_repeats && inv_repeats->contained( regional_alns[i].r_start, regional_alns[i].r_end ))
+            continue;
         if(regional_alns[i].is_5end())
         {
             it = pair_5.find( regional_alns[i].q_id );
@@ -276,10 +383,12 @@ void Region::write_graph(size_t r_id, std::ostream& out)
         if(it3 == pair_3.end()) continue;
         for(std::vector<size_t>::iterator uit = it5->second.begin();
                 uit != it5->second.end(); ++uit)
+        {
             for(std::vector<size_t>::iterator vit = it3->second.begin();
                     vit != it3->second.end(); ++vit)
             {
-                if(seg_ids[ *uit ] == seg_ids[ *vit ] || regional_alns[ *uit ].is_forward() == regional_alns[ *vit ].is_forward())
+                if(seg_ids[ *uit ] == seg_ids[ *vit ] || 
+                        regional_alns[ *uit ].is_forward() == regional_alns[ *vit ].is_forward())
                 {
                     // if the validated region still have inversions inside, ignore it
                     // or the two reads are in the same direction, ignore it
@@ -292,6 +401,7 @@ void Region::write_graph(size_t r_id, std::ostream& out)
                 else
                     (*eit).inc_weight();
             }
+        }
     }
 
     if(not edges.empty())

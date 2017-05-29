@@ -40,17 +40,29 @@ void InvDector::read(const std::string& fname)
 
 void InvDector::gen_graphs(const std::string& fname,
         int min_cvg/* = 0*/, double min_cvg_percent/* = 0.0 */,
-        int min_overlap/* = 0*/)
+        int min_overlap/* = 0*/, const std::string& nucmer_prefix/* = ""*/)
 {
     std::ofstream fout(fname.c_str());
     if(! fout.is_open())    throw std::runtime_error("invdet_core: cannot open file [" + fname + "]");
+    InvertedRepeats inv_repeats(nucmer_prefix);
     for(size_t i = 0; i < regions.size(); ++i)
     {
         regions[i].remove_low_coverage_reads(min_cvg, min_cvg_percent);
         regions[i].gen_vertices(min_overlap);
-        regions[i].make_pairs();
+        if(! nucmer_prefix.empty())
+        {
+            inv_repeats.open( i );
+            inv_repeats.read();
+            regions[i].make_pairs( &inv_repeats );
+            inv_repeats.close();
+        }
+        else
+        {
+            regions[i].make_pairs();
+        }
         regions[i].write_graph( i, fout );
     }
+    inv_repeats.clear();
     fout.close();
 }
 

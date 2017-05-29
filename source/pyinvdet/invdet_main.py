@@ -44,6 +44,7 @@ def parse_args(argv = None):
     parser.add_argument("-s", "--start-from", default="begin", choices=stage_list, help="start the program from (default: %(default)s)")
     parser.add_argument("-o", "--only", action="store_true", help="Run the chosen stage only")
     parser.add_argument("-S", "--chosen-stages", action="append", choices=stage_list, help="Choose a stage or stages to run")
+    parser.add_argument("--strategy", default="ignore-IR", choices=["naive", "ignore-IR", "extract-IR"], help="Choose a strategy ('IR' stands for 'Inverted Repeats'; 'extract-IR' has not been implemented yet)")
     parser.add_argument("--min-coverage", default=5, type=int, help="min coverage for filtering poor alignments (default: %(default)s)")
     parser.add_argument("--min-percent", default=0.05, type=float, help="min percentage of coverage for filtering poor alignments (default: %(default)s)")
     parser.add_argument("--min-overlap", default=50, type=int, help="min overlap for determining the overlaped regions (default: %(default)s)")
@@ -116,7 +117,11 @@ def run_blasr(args, logger):
     subprocess.check_call(blasr_command)
 
 def run_inv_repeats(args, logger):
+    if args.strategy == "naive":
+        return
     logger.info("[inv-repeats] Extract inverted repeats using Nucmer")
+    nucmer_working_dir = os.path.join( args.working_directory, "nucmer" )
+    makedir( nucmer_working_dir )
     if not args.target_genome:
         logger.critical("-t/--target-genome is missing")
         exit(-1)
@@ -133,8 +138,6 @@ def run_inv_repeats(args, logger):
         addCmdParameter(nucmer_command, "-l", args.nc_minmatch)
     #addCmdParameter(nucmer_command, args.target_genome, args.target_genome)
     logger.debug("numcer parameters: {}".format(str(nucmer_command)))
-    nucmer_working_dir = os.path.join( args.working_directory, "nucmer" )
-    makedir( nucmer_working_dir )
 
     n_refs = 0
     with pysam.FastxFile(args.target_genome) as fh:
@@ -189,7 +192,13 @@ def run_report(args, logger):
     brief_alignment = os.path.join( args.working_directory, "brief_alignment")
     graph_file = os.path.join( args.working_directory, "graph_file")
     inv_dector.read( brief_alignment )
-    inv_dector.gen_graphs(graph_file, args.min_coverage, args.min_percent, args.min_overlap)
+    if args.strategy == "ignore-IR":
+        inv_dector.gen_graphs_ignore_inverted_repeats(graph_file, os.path.join(args.working_directory, "nucmer"), args.min_coverage, args.min_percent, args.min_overlap)
+    elif args.strategy == "naive":
+        inv_dector.gen_graphs(graph_file, args.min_coverage, args.min_percent, args.min_overlap)
+    else: # "extract-IR"
+        logger.error("The strategy 'extract-IR' has not been implemented yet! Please choose another strategy")
+        exit(1)
 
     logger.info("run max-cut")
     graph_cut = os.path.join(args.working_directory, "graph_cut")

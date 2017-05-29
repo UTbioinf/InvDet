@@ -20,3 +20,6 @@ In this version, the inverted repeats information is used.
 
 Type `invdet -h` to see the usage
 
+# TODO
+
+* Extract inverted repeats and view them as validated segments

@@ -2,6 +2,7 @@
 #define __INVDET_REGION_H
 
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -12,6 +13,25 @@
 
 namespace loon
 {
+
+class InvertedRepeats
+{
+public:
+    std::vector<size_t> r_starts, r_ends;
+    std::string prefix;
+    std::ifstream fin;
+    
+    void parse_two_ints(const std::string& line);
+    void quicksort(long long L, long long R);
+public:
+    InvertedRepeats(const std::string& filedir);
+    void open(size_t file_id);
+    void close();
+    void read();
+    void clear();
+    size_t size() const;
+    bool contained(size_t i, size_t j) const;
+};
 
 class VertexPair
 {
@@ -88,7 +108,7 @@ public:
     void clear_name();
     void remove_low_coverage_reads(int min_cvg = 0, double min_cvg_percent = 0.0);
     void gen_vertices(int min_overlap = 0);
-    void make_pairs();
+    void make_pairs(InvertedRepeats* inv_repeats = NULL);
     void write_graph(size_t r_id, std::ostream& out);
     void report_inversions(size_t r_id, size_t n_vertices, size_t n_edges,
             std::istream& graph_in, std::istream& maxcut_in, std::ostream& inv_out);
