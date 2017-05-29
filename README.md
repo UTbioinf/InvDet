@@ -7,6 +7,8 @@ In this version, the inverted repeats information is used.
 # dependencies
 
 * cmake >= 3.6
+* BLASR>=5.2
+* MUMmer
 * Anything else can be installed via command `pip install -r requirements.txt`
 
 # Install
