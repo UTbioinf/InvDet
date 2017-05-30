@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import invdet
 from invdet import bamExtractor
 from invdet import peGenerator
 from invdet.invdet_core import InvDector
@@ -45,6 +46,7 @@ def parse_args(argv = None):
     parser.add_argument("-o", "--only", action="store_true", help="Run the chosen stage only")
     parser.add_argument("-S", "--chosen-stages", action="append", choices=stage_list, help="Choose a stage or stages to run")
     parser.add_argument("--strategy", default="ignore-IR", choices=["naive", "ignore-IR", "extract-IR"], help="Choose a strategy ('IR' stands for 'Inverted Repeats'; 'extract-IR' has not been implemented yet)")
+    parser.add_argument("-V", "--version", action='version', version=('%(prog)s ' + invdet.__version__))
     parser.add_argument("--min-coverage", default=5, type=int, help="min coverage for filtering poor alignments (default: %(default)s)")
     parser.add_argument("--min-percent", default=0.05, type=float, help="min percentage of coverage for filtering poor alignments (default: %(default)s)")
     parser.add_argument("--min-overlap", default=50, type=int, help="min overlap for determining the overlaped regions (default: %(default)s)")
