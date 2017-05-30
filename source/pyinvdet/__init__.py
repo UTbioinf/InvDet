@@ -3,8 +3,8 @@ import os.path
 
 try:
     _dist = get_distribution("invdet")
-    dist_loc = os.path.normcase(_dist.location)
-    here = os.path.normcase(__file__)
+    dist_loc = os.path.realpath( os.path.normcase(_dist.location) )
+    here = os.path.realpath( os.path.normcase(__file__) )
     if not here.startswith(os.path.join(dist_loc, 'invdet')):
         raise DistributionNotFound
 except DistributionNotFound:
