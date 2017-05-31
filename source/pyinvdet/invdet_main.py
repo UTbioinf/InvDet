@@ -20,8 +20,6 @@ def nucmer_task(params, logger=None):
     prefix = os.path.join( params[1], "nc_aln.{}".format( params[2] ) )
     infile_name = os.path.join( params[1], "nucmer-input.{}.fasta".format( params[2] ) )
     with open(log_fname, "wb") as fout_nclog:
-        if logger:
-            logger.debug("nucmer full parameters: " + str(params[0] + ["--prefix", prefix, infile_name, infile_name]))
         child_process = subprocess.Popen( params[0] + ["--prefix", prefix, infile_name, infile_name], stderr = fout_nclog )
         ret_code = child_process.wait()
         if ret_code != 0:
