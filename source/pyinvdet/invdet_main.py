@@ -26,6 +26,7 @@ def parse_args(argv = None):
     parser.add_argument("-r", "--reads", help="reads file (fasta/fastq format, pacbio long reads preferred)")
     parser.add_argument("-s", "--start-from", default="begin", choices=["begin", "blasr", "extract", "report"], help="start the program from (default: %(default)s)")
     parser.add_argument("-V", "--version", action='version', version=('%(prog)s ' + invdet.__version__))
+    parser.add_argument("--debug", action="store_const", const=logging.DEBUG, default=logging.INFO, help="show debug info")
     parser.add_argument("--min-coverage", default=5, type=int, help="min coverage for filtering poor alignments (default: %(default)s)")
     parser.add_argument("--min-percent", default=0.05, type=float, help="min percentage of coverage for filtering poor alignments (default: %(default)s)")
     parser.add_argument("--min-overlap", default=50, type=int, help="min overlap for determining the overlaped regions (default: %(default)s)")
@@ -55,9 +56,9 @@ def main(argv = None):
     makedir( args.working_directory )
 
     if args.log:
-        logging.basicConfig(filename=os.path.join(args.working_directory, "invdet.log"), format="[%(asctime)s] [%(levelname)s] %(message)s", level=logging.DEBUG)
+        logging.basicConfig(filename=os.path.join(args.working_directory, "invdet.log"), format="[%(asctime)s] [%(levelname)s] %(message)s", level=args.debug)
     else:
-        logging.basicConfig(format="[%(asctime)s] [%(levelname)s] %(message)s", level=logging.DEBUG)
+        logging.basicConfig(format="[%(asctime)s] [%(levelname)s] %(message)s", level=args.debug)
     logger = logging.getLogger()
     logger.info("Start")
 
