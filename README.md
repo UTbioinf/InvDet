@@ -1,8 +1,8 @@
 Inversion Detector
 
-version 0.2
+version 0.3
 
-In this version, the inverted repeats information is used.
+In this version, the inverted repeats will also be extracted and split as validated segments
 
 # dependencies
 
@@ -22,4 +22,3 @@ Type `invdet -h` to see the usage
 
 # TODO
 
-* Extract inverted repeats and view them as validated segments
