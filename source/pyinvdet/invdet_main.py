@@ -47,9 +47,9 @@ def parse_args(argv = None):
     parser.add_argument("-S", "--chosen-stages", action="append", choices=stage_list, help="Choose a stage or stages to run")
     parser.add_argument("--strategy", default="ignore-IR", choices=["naive", "ignore-IR", "extract-IR"], help="Choose a strategy (default: %(default)s) ('IR' stands for 'Inverted Repeats'; 'extract-IR' has not been implemented yet)")
     parser.add_argument("-V", "--version", action='version', version=('%(prog)s ' + invdet.__version__))
-    parser.add_argument("--min-coverage", default=5, type=int, help="min coverage for filtering poor alignments (default: %(default)s)")
-    parser.add_argument("--min-percent", default=0.05, type=float, help="min percentage of coverage for filtering poor alignments (default: %(default)s)")
-    parser.add_argument("--min-overlap", default=50, type=int, help="min overlap for determining the overlaped regions (default: %(default)s)")
+    parser.add_argument("--min-coverage", default=0, type=int, help="min coverage for filtering poor alignments (default: %(default)s)")
+    parser.add_argument("--min-percent", default=0.2, type=float, help="min percentage of coverage for filtering poor alignments (default: %(default)s)")
+    parser.add_argument("--min-overlap", default=80, type=int, help="min overlap for determining the overlaped regions (default: %(default)s)")
     parser.add_argument("--small-graph", default=15, type=int, help="max number of vertices for small graph (default: %(default)s)")
     parser.add_argument("--max-nodes", default=60, type=int, help="max number of vertices that can run on with 0.878-approx algorithm (default: %(default)s)")
     parser.add_argument("--min-iter", default=100, type=int, help="min iterations for running 0.878-approx algorithm (default: %(default)s)")
@@ -62,11 +62,11 @@ def parse_args(argv = None):
     parser.add_argument("-j", "--nproc", default=1, type=int, help="BLASR/NUCmer option: number of threads (default: %(default)s)")
 
     # blasr options
-    parser.add_argument("--minMatch", type=int, default=12, help="BLASR option: minimum seed length (default: %(default)s)")
+    parser.add_argument("--minMatch", type=int, default=20, help="BLASR option: minimum seed length (default: %(default)s)")
     parser.add_argument("--minReadLength", type=int, default=50, help="BLASR option: Skip reads that have a full length less than minReadLength. Subreads may be shorter. (default: %(default)s)")
-    parser.add_argument("--minAlnLength", type=int, default=0, help="BLASR option: report alignments only if their lengths are greater than minAlnLength (default: %(default)s)")
-    parser.add_argument("--minPctSimilarity", type=float, default=0, help="BLASR option: report alignments only if their percentage similarity is greater than minPctSimilarity (range: [0.0, 100.0], default: %(default)s)")
-    parser.add_argument("--minPctAccuracy", type=float, default=0, help="BLASR option: report alignments only if their percentage accuracy is greater than minPctAccuracy (range: [0.0, 100.0], default: %(default)s)")
+    parser.add_argument("--minAlnLength", type=int, default=80, help="BLASR option: report alignments only if their lengths are greater than minAlnLength (default: %(default)s)")
+    parser.add_argument("--minPctSimilarity", type=float, default=90.0, help="BLASR option: report alignments only if their percentage similarity is greater than minPctSimilarity (range: [0.0, 100.0], default: %(default)s)")
+    parser.add_argument("--minPctAccuracy", type=float, default=90.0, help="BLASR option: report alignments only if their percentage accuracy is greater than minPctAccuracy (range: [0.0, 100.0], default: %(default)s)")
     
     # nucmer options
     parser.add_argument("--nc-breaklen", type=int, default=50, help="Nucmer option: set the distance an alignment extension will attempt to extend poor scoring regions before giving up (default: %(default)s)")
