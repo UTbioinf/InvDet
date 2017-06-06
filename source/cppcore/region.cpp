@@ -2,9 +2,9 @@
 #include <stdexcept>
 #include "region.h"
 
-// #define DEBUG_SEG_EXTRACTION
-// #define DEBUG_B_GRAPH_PRINT
-// #define DEBUG_EDGE_WEIGHT_FILTER
+#define DEBUG_SEG_EXTRACTION
+#define DEBUG_B_GRAPH_PRINT
+#define DEBUG_EDGE_WEIGHT_FILTER
 
 
 namespace loon
