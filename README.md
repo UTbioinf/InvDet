@@ -22,3 +22,4 @@ Type `invdet -h` to see the usage
 
 # TODO
 
+* add `--dry-run` options to show all the specified stages
