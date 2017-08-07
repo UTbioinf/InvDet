@@ -129,6 +129,8 @@ cdef class MaxCut:
                 if self._value < self._maxcut.get_value():
                     self._value = self._maxcut.get_value()
                     self._solution = self._maxcut.get_solution()
+            else:
+                self._solution = self._maxcut.get_solution()
 
     def is_bipartite(self):
         if self._maxcut.is_bipartite():
