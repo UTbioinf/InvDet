@@ -189,6 +189,7 @@ def main(argv = None):
             fout.write(entry.name, entry.comment, entry.sequence, entry.quality)
             if args.statistics:
                 stats.add_entry( entry )
+    fout.close()
     if args.statistics:
         with open(args.prefix + ".stats.txt", "w") as fout:
             stats.write( fout )
