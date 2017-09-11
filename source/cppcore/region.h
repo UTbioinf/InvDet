@@ -9,6 +9,7 @@
 #include <map>
 #include <set>
 #include <algorithm>
+#include <cstdio>
 #include <RMQnlogn.hpp>
 
 namespace loon
@@ -23,6 +24,7 @@ public:
     
     void parse_two_ints(const std::string& line);
     void quicksort(long long L, long long R);
+    std::string compose_subdirectory(size_t n);
 public:
     InvertedRepeats(const std::string& filedir);
     void open(size_t file_id);

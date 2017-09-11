@@ -15,10 +15,27 @@ import pysam
 import multiprocessing
 import signal
 
+def makedir(path):
+    try:
+        os.makedirs(path)
+    except OSError as exception:
+        if exception.errno != errno.EEXIST:
+            raise
+
+def compose_subdirectory(index):
+    sub_dirs = ["{:02X}".format(index & 0xFF)]
+    index >>= 8
+    while index > 0:
+        sub_dirs.append("{:02X}".format( index & 0xFF ))
+        index >>= 8
+    return os.path.join(*sub_dirs)
+    
+
 def nucmer_task(params, logger=None):
-    log_fname = os.path.join( params[1], "nucmer.{}.log".format( params[2]) )
-    prefix = os.path.join( params[1], "nc_aln.{}".format( params[2] ) )
-    infile_name = os.path.join( params[1], "nucmer-input.{}.fasta".format( params[2] ) )
+    nucmer_input_dirname = os.path.join( params[1], compose_subdirectory( params[2] ) )
+    log_fname = os.path.join( nucmer_input_dirname, "nucmer.{}.log".format( params[2]) )
+    prefix = os.path.join( nucmer_input_dirname, "nc_aln.{}".format( params[2] ) )
+    infile_name = os.path.join( nucmer_input_dirname, "nucmer-input.{}.fasta".format( params[2] ) )
     with open(log_fname, "wb") as fout_nclog:
         child_process = subprocess.Popen( params[0] + ["--prefix", prefix, infile_name, infile_name], stderr = fout_nclog )
         ret_code = child_process.wait()
@@ -29,12 +46,6 @@ def nucmer_task(params, logger=None):
             else:
                 raise RuntimeError("[ERROR]: Run Nucmer failed. See `{}` for more details. ret_code = {}, command = {}".format( log_fname, ret_code, str(params[0] + ["--prefix", prefix, infile_name, infile_name])))
 
-def makedir(path):
-    try:
-        os.makedirs(path)
-    except OSError as exception:
-        if exception.errno != errno.EEXIST:
-            raise
 
 def parse_args(argv = None):
     stage_list = ["begin", "blasr", "extract", "inv-repeats", "report"]
@@ -143,9 +154,10 @@ def run_inv_repeats(args, logger):
 
     n_refs = 0
     with pysam.FastxFile(args.target_genome) as fh:
-        nucmer_input_prefix = os.path.join( nucmer_working_dir, "nucmer-input" )
         for entry in fh:
-            with open(nucmer_input_prefix + ".{}.fasta".format(n_refs), "w") as fout:
+            nucmer_input_dirname = os.path.join(nucmer_working_dir, compose_subdirectory(n_refs))
+            makedir(nucmer_input_dirname)
+            with open(os.path.join(nucmer_input_dirname, "nucmer-input.{}.fasta".format(n_refs)), "w") as fout:
                 fout.write(">{}\n".format( n_refs ))
                 fout.write(entry.sequence)
                 fout.write("\n")

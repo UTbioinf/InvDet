@@ -47,6 +47,30 @@ void InvertedRepeats::quicksort(long long L, long long R)
     if(L < j)   quicksort(L, j);
 }
 
+std::string InvertedRepeats::compose_subdirectory(size_t n)
+{
+    std::string ret;
+    char ch[4] = {0};
+#if defined(_WIN32) || defined(__CYGWIN__)
+    sprintf(ch, "\\%02X", static_cast<unsigned int>(n & 0xFFu));
+#else
+    sprintf(ch, "/%02X", static_cast<unsigned int>(n & 0xFFu));
+#endif
+    ret += ch;
+    n >>= 8;
+    while(n > 0)
+    {
+    #if defined(_WIN32) || defined(__CYGWIN__)
+        sprintf(ch, "\\%02X", static_cast<unsigned int>(n & 0xFFu));
+    #else
+        sprintf(ch, "/%02X", static_cast<unsigned int>(n & 0xFFu));
+    #endif
+        ret += ch;
+        n >>= 8;
+    }
+    return ret;    
+}
+
 void InvertedRepeats::open(size_t file_id)
 {
     std::ostringstream oss;
@@ -55,7 +79,7 @@ void InvertedRepeats::open(size_t file_id)
 #else
     oss << "/nc_aln." << file_id << ".delta";
 #endif
-    std::string fname = prefix + oss.str();
+    std::string fname = prefix + compose_subdirectory(file_id) + oss.str();
     fin.open( fname.c_str() );
     if(!fin.is_open())
         throw std::runtime_error("region: cannot open file [" + fname + "]");
