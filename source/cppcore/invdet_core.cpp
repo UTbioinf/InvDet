@@ -42,13 +42,31 @@ void InvDector::gen_graphs(const std::string& fname,
         int min_cvg/* = 0*/, double min_cvg_percent/* = 0.0 */,
         int min_overlap/* = 0*/, const std::string& nucmer_prefix/* = ""*/)
 {
-    std::ofstream fout(fname.c_str());
+    std::ofstream fout(fname.c_str());  // graph_file: graph file
     if(! fout.is_open())    throw std::runtime_error("invdet_core: cannot open file [" + fname + "]");
+
+#ifdef FOR_NORA_EXAMINATION
+    std::ofstream fout_seg( (fname + ".seg").c_str() ); // graph_file.seg: segments for each single ref
+    if(! fout_seg.is_open())    throw std::runtime_error("invdet_core: cannot open file [" + fname + ".seg]");
+    std::ofstream fout_graph_bridge( (fname + ".graph_bridge").c_str() ); // graph_file.graph_bridge: file for reporting bridges for each pair of vertices
+    if(! fout_graph_bridge.is_open())   throw std::runtime_error("invdet_core: cannot open file [" + fname + ".graph_bridge]");
+#endif
+
     InvertedRepeats inv_repeats(nucmer_prefix);
+
+#ifdef FOR_NORA_EXAMINATION
+    fout_seg << regions.size() << std::endl;
+#endif
+
     for(size_t i = 0; i < regions.size(); ++i)
     {
         regions[i].remove_low_coverage_reads(min_cvg, min_cvg_percent);
         regions[i].gen_vertices(min_overlap);
+
+    #ifdef FOR_NORA_EXAMINATION
+        regions[i].write_vertices(i, fout_seg);
+    #endif
+
         if(! nucmer_prefix.empty())
         {
             inv_repeats.open( i );
@@ -60,10 +78,19 @@ void InvDector::gen_graphs(const std::string& fname,
         {
             regions[i].make_pairs();
         }
+    #ifdef FOR_NORA_EXAMINATION
+        regions[i].write_graph( i, fout , fout_graph_bridge);
+    #else
         regions[i].write_graph( i, fout );
+    #endif
     }
     inv_repeats.clear();
     fout.close();
+
+#ifdef FOR_NORA_EXAMINATION
+    fout_seg.close();
+    fout_graph_bridge.close();
+#endif
 }
 
 void InvDector::report_inversions(const std::string& graph_fname,

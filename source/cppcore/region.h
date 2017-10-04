@@ -57,6 +57,9 @@ public:
     long long q_start, q_end;
     short mapping_quality;
     char direction, q_pos;
+#ifdef FOR_NORA_EXAMINATION
+    long long q_raw_len;
+#endif
 public:
     OneAln(): q_length(-1) {}
     OneAln(const std::string& qname, long long qlen,
@@ -69,12 +72,15 @@ public:
     void invalidate();
     bool is_valid() const;
     bool operator<(const OneAln& rhs) const;
+#ifdef FOR_NORA_EXAMINATION
+    friend std::ostream& operator<<(std::ostream& out, const OneAln& obj);
+#endif
 };
 
 class SegEndpoint
 {
 public:
-    size_t seg_id;
+    size_t seg_id; // index of the alignment region in the reference genome
     size_t loc;
     bool is_start;
 public:
@@ -96,9 +102,9 @@ private:
     long long r_length;
     std::string r_name;
     std::vector< OneAln > regional_alns;
-    std::vector< size_t > segs_start;
-    std::vector< size_t > segs_end;
-    std::vector< size_t > seg_ids;
+    std::vector< size_t > segs_start;   // start_loc of validated segment
+    std::vector< size_t > segs_end;     // end_loc of validated segments
+    std::vector< size_t > seg_ids;      // validated segment ID of the current alignment in the reference genome
     std::map<size_t, std::vector<size_t> > pair_5, pair_3;
 public:
     void add_ref_info(long long len, const std::string& name);
@@ -111,7 +117,12 @@ public:
     void remove_low_coverage_reads(int min_cvg = 0, double min_cvg_percent = 0.0);
     void gen_vertices(int min_overlap = 0);
     void make_pairs(InvertedRepeats* inv_repeats = NULL);
+#ifdef FOR_NORA_EXAMINATION
+    void write_vertices(size_t r_id, std::ostream& out) const;
+    void write_graph(size_t r_id, std::ostream& out, std::ostream& out_graph_bridge);
+#else
     void write_graph(size_t r_id, std::ostream& out);
+#endif
     void report_inversions(size_t r_id, size_t n_vertices, size_t n_edges,
             std::istream& graph_in, std::istream& maxcut_in, std::ostream& inv_out);
 };

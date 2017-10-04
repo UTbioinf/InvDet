@@ -190,7 +190,12 @@ OneAln::OneAln(const std::string& qname, long long qlen,
         mapping_quality(mapQ), direction(dir)
 {
     std::istringstream iss( qname.substr(qname.find("afun") + std::string("afun").length()) );
+#ifdef FOR_NORA_EXAMINATION
+    char under_score;
+    iss >> q_id >> under_score >> q_pos >> under_score >> q_raw_len;
+#else
     iss >> q_id >> q_pos >> q_pos;
+#endif
 }
 
 bool OneAln::is_forward() const
@@ -224,6 +229,17 @@ bool OneAln::operator<(const OneAln& rhs) const
             (r_start == rhs.r_start && r_end > rhs.r_end)))   return true;
     return false;
 }
+
+#ifdef FOR_NORA_EXAMINATION
+std::ostream& operator<<(std::ostream& out, const OneAln& obj)
+{
+    return out << "afun" << obj.q_id << '_' << obj.q_pos << '_' << obj.q_raw_len
+            << ' ' << obj.q_length
+            << ' ' << obj.r_start << ' ' << obj.r_end
+            << ' ' << obj.q_start << ' ' << obj.q_end
+            << ' ' << obj.mapping_quality << ' ' << obj.direction;
+}
+#endif
 
 
 
@@ -281,8 +297,8 @@ void Region::remove_low_coverage_reads(int min_cvg/* = 0*/, double min_cvg_perce
     // convert reference to segments and small segments w/i each segment
     //std::vector<size_t > ref_segments;
     //ref_segments.reserve( nn );
-    std::vector<size_t> q_segStart( nn );
-    std::vector<size_t> q_segEnd( nn );
+    std::vector<size_t> q_segStart( nn ); // start index of RMQ
+    std::vector<size_t> q_segEnd( nn ); // end index of RMQ
     size_t last_pos = 0;
     //ref_segments.push_back(0);
     RMQnlogn<size_t> rmq;
@@ -361,13 +377,17 @@ void Region::gen_vertices(int min_overlap)
             break;
         }
     }
-#ifdef DEBUG_SEG_EXTRACTION
-    std::cerr << "segments start" << std::endl;
-    for(size_t i = 0; i < segs_start.size(); ++i)
-        std::cerr << segs_start[i] << ' ' << segs_end[i] << std::endl;
-    std::cerr << "segments end" << std::endl << std::endl;
-#endif
 }
+
+#ifdef FOR_NORA_EXAMINATION
+void Region::write_vertices(size_t r_id, std::ostream& out) const
+{
+    const int n = segs_start.size();
+    out << r_id << ' ' << n << std::endl;
+    for(size_t i = 0; i < n; ++i)
+        out << segs_start[i] << ' ' << segs_end[i] << std::endl;
+}
+#endif
 
 void Region::make_pairs(InvertedRepeats* inv_repeats/* = NULL */)
 {
@@ -395,7 +415,11 @@ void Region::make_pairs(InvertedRepeats* inv_repeats/* = NULL */)
     }
 }
 
+#ifdef FOR_NORA_EXAMINATION
+void Region::write_graph(size_t r_id, std::ostream& out, std::ostream& out_graph_bridge)
+#else
 void Region::write_graph(size_t r_id, std::ostream& out)
+#endif
 {
     std::set<VertexPair> edges;
     std::set<VertexPair>::iterator eit;
@@ -424,6 +448,13 @@ void Region::write_graph(size_t r_id, std::ostream& out)
                     edges.insert( e );
                 else
                     (*eit).inc_weight();
+            #ifdef FOR_NORA_EXAMINATION
+                out_graph_bridge << r_id << ' ' << regional_alns[ *uit ]
+                        << ' ' << seg_ids[*uit] << ' ' << segs_start[ seg_ids[*uit] ] << ' ' << segs_end[ seg_ids[*uit] ] << std::endl;
+                out_graph_bridge << "* " << regional_alns[*vit]
+                        << ' ' << seg_ids[*vit] << ' ' << segs_start[ seg_ids[*vit] ] << ' ' << segs_end[ seg_ids[*vit] ] << std::endl;
+
+            #endif
             }
         }
     }
