@@ -462,8 +462,8 @@ void Region::write_graph(size_t r_id, std::ostream& out)
                 long long re2 = regional_alns[*vit].r_end;
 
                 if(re1 < rs2)   q_gap += rs2 - re1;
-                else    g_gap += rs1 - re2;
-                g_gap += std::max(re1 - rs1, re2 - rs2);
+                else    q_gap += rs1 - re2;
+                q_gap += std::max(re1 - rs1, re2 - rs2);
                 if(q_gap < 1000000) continue;
             #endif
                 e.set_uvw( seg_ids[ *uit ], seg_ids[ *vit ] );
