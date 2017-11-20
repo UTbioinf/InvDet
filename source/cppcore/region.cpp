@@ -442,6 +442,30 @@ void Region::write_graph(size_t r_id, std::ostream& out)
                     // or the two reads are in the same direction, ignore it
                     continue;
                 }
+            #ifdef FOR_NORA_EXAMINATION
+                // skip small inversions
+
+                // if( segs_end[ seg_ids[*uit] ] - segs_start[ seg_ids[*uit]] < 1000000 &&
+                //         segs_end[ seg_ids[*vit] ] - segs_start[ seg_ids[*vit] ] < 1000000)
+                //     continue;
+                long long qs1 = regional_alns[*uit].q_start;
+                long long qe1 = regional_alns[*uit].q_end;
+                long long qs2 = regional_alns[*vit].q_raw_len - regional_alns[*vit].q_end;
+                long long qe2 = regional_alns[*vit].q_raw_len - regional_alns[*vit].q_start;
+                long long q_gap = 0;
+                if(qe1 < qs2)   q_gap = qs2 - qe1;
+                else    q_gap = qs1 - qe2;
+                
+                long long rs1 = regional_alns[*uit].r_start;
+                long long re1 = regional_alns[*uit].r_end;
+                long long rs2 = regional_alns[*vit].r_start;
+                long long re2 = regional_alns[*vit].r_end;
+
+                if(re1 < rs2)   q_gap += rs2 - re1;
+                else    g_gap += rs1 - re2;
+                g_gap += std::max(re1 - rs1, re2 - rs2);
+                if(q_gap < 1000000) continue;
+            #endif
                 e.set_uvw( seg_ids[ *uit ], seg_ids[ *vit ] );
                 eit = edges.find( e );
                 if(eit == edges.end())
